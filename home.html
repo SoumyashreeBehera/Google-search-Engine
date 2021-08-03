@@ -1,0 +1,176 @@
+<!-- <div>yes</div> -->
+<head>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;1,300&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/ionicons.min.css" />
+  <style>
+    body {
+      font-family: "Lato", "Ariel", sans-serif;
+      font-weight: 400;
+      overflow: hidden;
+    }
+    h3,
+    p {
+      margin: 0px;
+      padding: 0px;
+    }
+    #section {
+      max-width: 800px;
+      display: flex;
+      border: 1px solid #d4d0d0;
+      border-radius: 50px;
+      flex-flow: column wrap;
+      padding: 10px;
+      margin: 10px auto;
+      /* border-radius: 10px; */
+    }
+    #query {
+      border: none;
+    }
+    /* #charDiv {
+      max-height: 350px;
+      overflow-y: scroll;
+      padding: 0px 20px;
+      scrollbar-width: thin;
+    }
+    #eachSpace {
+      display: flex;
+      justify-content: space-between;
+      height: 70px;
+      padding: 10px;
+      color: black;
+    } */
+    #inputBox {
+      display: flex;
+      padding: 10px;
+      margin: 10px;
+    }
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: grey;
+    }
+    #resultDiv {
+      max-width: 800px;
+      padding: 10px;
+      margin: 30px auto;
+    }
+    #makeitflex {
+      display: flex;
+      flex-flow: row wrap;
+      margin-top: 20px;
+    }
+    #makeitflex > a {
+      flex: 1;
+      text-align: center;
+    }
+    #questionDiv {
+      margin-top: 20px;
+    }
+    p,
+    a {
+      font-size: 25px;
+    }
+    a {
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="section">
+    <div id="inputBox">
+      <input
+        type="text"
+        id="query"
+        placeholder="Search Google or Type a URL"
+        style="flex: 1; padding: 0px 15px; outline: 0; font-size: 22px"
+      />
+      <div style="font-size: 30px; border-radius: 100%; color: blueviolet">
+        <i
+          class="ion-close-round"
+          id="hiddenIcon"
+          style="
+            background-color: white;
+            visibility: hidden;
+            margin-right: 20px;
+          "
+        ></i>
+        <i
+          class="ion-ios7-search"
+          id="searchIcon"
+          onclick="findResult()"
+          style="background-color: white; margin-right: 20px"
+        ></i>
+        <i class="ion-mic-a" style="background-color: white"></i>
+      </div>
+    </div>
+  </div>
+  <div id="resultDiv"></div>
+</body>
+<script>
+  let resultDiv = document.getElementById("resultDiv");
+  let query = document.getElementById("query");
+  async function findResult() {
+    let res = await fetch(
+      `http://api.serpstack.com/search?access_key=0fc8d641a29b80910af253ee6814a750&query=${query.value}`
+    );
+    let data = await res.json();
+    console.log(data);
+    // return data;
+    let { knowledge_graph, related_questions, top_stories } = data;
+    appendData(knowledge_graph, related_questions, top_stories);
+  }
+  function appendData(knowledge_graph, q, s) {
+    resultDiv.innerHTML = null;
+    let pDescription = document.createElement("p");
+    pDescription.innerHTML = knowledge_graph.description;
+    pDescription.style.marginTop = "20px";
+
+    let peopleDiv = document.createElement("div");
+    peopleDiv.setAttribute("id", "makeitflex");
+    peopleDiv.textContent = "People also search for";
+
+    let { people_also_search_for } = knowledge_graph;
+    people_also_search_for.forEach(({ name, link }) => {
+      let a = document.createElement("a");
+      a.href = link;
+      a.innerText = name;
+      peopleDiv.append(a);
+    });
+    let {
+      source: { url },
+    } = knowledge_graph;
+    let aWiki = document.createElement("a");
+    aWiki.href = url;
+    aWiki.textContent = url;
+
+    let questionDiv = document.createElement("div");
+    questionDiv.setAttribute("id", "questionDiv");
+    let h2questionDiv = document.createElement("h2");
+    h2questionDiv.textContent = "People also ask for:";
+    questionDiv.append(h2questionDiv);
+    q.forEach(({ question }) => {
+      let p = document.createElement("p");
+      p.innerText = question;
+      questionDiv.append(p);
+    });
+
+    let relatedDiv = document.createElement("div");
+    relatedDiv.setAttribute("id", "relatedDiv");
+    let h2relatedDiv = document.createElement("h2");
+    h2relatedDiv.textContent = "related stories:";
+    relatedDiv.append(h2relatedDiv);
+    s.forEach(({ title, url }) => {
+      let a = document.createElement("a");
+      a.innerText = title;
+      a.href = url;
+      a.style.display = "block";
+      relatedDiv.append(a);
+    });
+
+    resultDiv.append(aWiki, pDescription, peopleDiv, questionDiv, relatedDiv);
+  }
+</script>
